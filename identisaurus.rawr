@@ -1,0 +1,10 @@
+# This is a comment
+ # This is another comment
+foo_A.o,1
+bar_A.o, 2
+
+foo_B.o,1#Comment
+ bar_B.o, 2# Comment
+
+foo_C.o,1 #Comment
+bar_C.o, 2 # Comment
