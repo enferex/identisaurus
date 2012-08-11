@@ -117,7 +117,7 @@ static VEC(build_count_t,gc) *load_build_count_file(const char *fname)
     count_t build_count;
     VEC(build_count_t,gc) *counts;
 
-    if (!(fp = fopen(fname, "r+")))
+    if (!(fp = fopen(fname, "a+")))
       E("Could not load file '%s' containing build counts.", fname);
 
     counts = VEC_alloc(build_count_t, gc, 1);
