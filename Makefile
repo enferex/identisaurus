@@ -3,7 +3,8 @@ include make.inc
 PLUGIN_SOURCE_FILES = $(NAME).c
 PLUGIN_OBJECT_FILES = $(NAME).o
 GCCPLUGINS_DIR = $(shell $(GCC) -print-file-name=plugin)
-CFLAGS += -I$(GCCPLUGINS_DIR)/include -fPIC -g3 -O0 -Wall #-pedantic -std=c99
+CFLAGS += -I$(GCCPLUGINS_DIR)/include \
+          $(EXTRA_CFLAGS) -fPIC -g3 -O0 -Wall -pedantic -std=c99
 
 $(NAME).so: $(PLUGIN_OBJECT_FILES)
 	$(CC) -g -O0 -shared $^ -o $@ $(CFLAGS)

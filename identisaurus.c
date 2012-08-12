@@ -47,7 +47,7 @@
 
 
 /* Enable debugging (or pass -DDEBUG via gcc/make) */
-#define DEBUG 0
+/* #define DEBUG */
 
 
 #define _P(_desc, ...)                        \
@@ -263,9 +263,10 @@ static void insert_build_string(
      * grep out from readelf or strings.
      */
     count = get_build_number(counts, base_fname);
-    asprintf(&str, "<"TAG">%s:Build %lu at %lu</"TAG">\n",
+    asprintf(&str, "<"TAG">%s:Build %lu at %lu</"TAG"> ",
              main_input_basename, count, time(NULL));
     P("Inserting build string: '%s' into file '%s'", str, base_fname);
+    str[strlen(str)-1] = '\n';
 
     /* Create a global string constant and have this baby plop into .ro */
     decl = build_decl(
