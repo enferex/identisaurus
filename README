@@ -1,0 +1,85 @@
+identisaurus
+------------
+Identisaurus is a plugin for the gcc compiler which automatically inserts a
+version string into the object files being compiled.  A POSIX timestamp and a
+monotonically increasing value (which is updated per build of the object file)
+is added to the resulting binary/object file.  The '.rodata' section of the
+binary contains this string and can be viewed by using `objdump' or `strings' or
+just looking for strings inside the binary with a text editor.  Also, an
+accompanying script `check_version.sh' can be used to find the version of a
+specific object file that has been stamped by the identisaurus.
+
+The identisaurus works by managing a file that keeps track of the number of
+times an object file has been built.  This file is then used to update the
+build count of the binary.  The user does not even need to be concerned about
+this file, but if you really really are, it is called '.identisaurus.rawr,'
+and lives in the directory where the source file resides.
+
+The identisaurus does not care what language the source file was written in.
+If gcc can handle it, identisaurus can too... rawr!
+
+
+Building the Plugin
+-------------------
+Simply run `make' in the top-level directory.  The resulting file,
+'identisaurus.so,' is the plugin.
+
+
+Usage
+-----
+Simply add the plugin argument to your build scripts, makefiles, or command line
+when building an object/executable:
+    gcc <myfile> <options> -fplugin=identisaurus.so
+
+If gcc complains about not being able to find the plugin, specify the path to
+the plugin.  Also, plugins are only supported on gcc versions 4.5 or greater.
+
+This plugin works by adding a global variable to the object file, which is a
+string and can be referenced using the identifier in your code: '__identisaurus'
+For instance, a C program can refrence this as shown below:
+     #include <stdio.h>
+     extern const char *__identisaurus;
+     int main(void) { 
+         printf("%s\n", __identisaurus);
+         return 0;
+     }
+
+
+Notes: '.rawr' File
+-------------------
+Rawr, pronounced *rawr!!!* is the filename that the identisaurus emits.  It is a
+'hidden' file named '.identisaurus.rawr.'  This is a very simple file and
+consists of comments prefixed with a '#' character.  The comments are not (yet)
+preserved between multiple builds using the identisaurus.  Therefore, you should
+not waste any time adding comments.  Each line in a rawr file is a comma
+separated value of:
+    <object_file_name>, <build_count>
+Where the 'build_count' is an integer value depicting the number of times
+that the object file named 'object_file_name' has been built with gcc using
+the identisaurus.  All of the stamped files in a directory are referenced by a
+single .rawr file.
+
+There is one key limitation, and that the plugin does not actually know what the
+resulting .o file or binary name will be.  The file name used in the string
+output by the identisaurus and in the rawr file is the name of the source file
+with its extension removed.  If the source file has multiple '.' characters in
+it, only the last one is considered the extension.
+
+Users can modify the rawr file if they wish.  This can be useful if the user
+wants to increase (or decrease) the build count for a particular object
+file.  Note that if the user does break chronological order and decreases the
+build count, that is totally fine; identisaurus does not care.  This file
+gets updated every build using the identisaurus plugin.  
+
+NOTE: Currently comments in the .rawr file are not preserved between
+updates/builds using the identisaurus.
+
+There once was an ancient beast, whose role was classifying object files, it
+was only known as an identisaurus.  His (gender neutral) bones have never been
+found, but his legacy lives in all object files, like fossils from a bygone
+era... *Rawr!*
+
+
+Contact
+-------
+mattdavis9@gmail.com
