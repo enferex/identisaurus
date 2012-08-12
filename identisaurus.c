@@ -263,10 +263,10 @@ static void insert_build_string(
      * grep out from readelf or strings.
      */
     count = get_build_number(counts, base_fname);
-    asprintf(&str, "<"TAG">%s:Build %lu at %lu</"TAG"> ",
+    int x = asprintf(&str, "<"TAG">%s:Build %lu at %lu</"TAG">X",
              main_input_basename, count, time(NULL));
-    P("Inserting build string: '%s' into file '%s'", str, base_fname);
-    str[strlen(str)-1] = '\n';
+    P("Inserting build string: '%s\b' into file '%s'", str, base_fname);
+    str[strlen(str)-1] = '\n'; /* Remove 'X' */
 
     /* Create a global string constant and have this baby plop into .ro */
     decl = build_decl(
