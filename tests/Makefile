@@ -1,6 +1,6 @@
 include ../make.inc
 
-SUBDIRS=test_c #test_go
+SUBDIRS=test_c
 
 all: tests
 
