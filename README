@@ -1,5 +1,5 @@
 identisaurus
-------------
+============
 Identisaurus is a plugin for the gcc compiler which automatically inserts a
 version string into the object files being compiled.  A POSIX timestamp and a
 monotonically increasing value (which is updated per build of the object file)
