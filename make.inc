@@ -10,4 +10,4 @@ PLUGIN = -fplugin=$(NAME).so
 #DBG_GCC     = $(GCC_BIN_DIR)/bin/gcc
 #GCC         = $(GCC_BIN_DIR)/bin/gcc
 #CC          = $(GCC_BIN_DIR)/bin/g++
-PLUGIN=-fplugin=/home/enferex/proj/identisaurus/$(NAME).so
+#PLUGIN=-fplugin=/home/enferex/proj/identisaurus/$(NAME).so
