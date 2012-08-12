@@ -17,7 +17,7 @@
 
 
 /* Enable debugging (or pass -DDEBUG via gcc/make) */
-#define DEBUG 1
+#define DEBUG 0
 
 
 #define _P(_desc, ...)                        \
@@ -90,19 +90,22 @@ static struct plugin_info identisaurus_info =
 
 /* Simple structure defining what makes up the count file */
 typedef unsigned long count_t;
-typedef struct { const char *fname; count_t build_count; } build_count_t;
+struct _build_count_d
+{
+    const char *fname;
+    count_t build_count;
+};
+typedef struct _build_count_d build_count_t;
 DEF_VEC_O(build_count_t);
 DEF_VEC_ALLOC_O(build_count_t, gc);
 
 
 static void add_build_count(
-    VEC(build_count_t,gc) *counts,
-    const char            *fname,
-    count_t                build_count)
+    VEC(build_count_t,gc) **counts,
+    const char             *fname,
+    count_t                 build_count)
 {
-    build_count_t *entry;
-        
-    entry = VEC_safe_push(build_count_t, gc, counts, NULL);
+    build_count_t *entry = VEC_safe_push(build_count_t, gc, *counts, NULL);
     entry->fname = ggc_strdup(fname);
     entry->build_count = build_count;
 }
@@ -112,11 +115,12 @@ static void add_build_count(
 static VEC(build_count_t,gc) *load_build_count_file(const char *fname)
 {
     int lineno;
-    char *c, *name, line[1024];
+    char *c, *name, line[1024] = {0};
     FILE *fp;
     count_t build_count;
     VEC(build_count_t,gc) *counts;
 
+    D("Loading .rawr file '%s'", fname);
     if (!(fp = fopen(fname, "a+")))
       E("Could not load file '%s' containing build counts.", fname);
 
@@ -139,7 +143,7 @@ static VEC(build_count_t,gc) *load_build_count_file(const char *fname)
         build_count = strtoll(strtok(NULL, ","), NULL, 10);
         if (!name || build_count < 0)
           E("Bad count file entry at line %d of count file '%s'",lineno,fname);
-        add_build_count(counts, name, build_count);
+        add_build_count(&counts, name, build_count);
     }
 
     fclose(fp);
@@ -175,15 +179,15 @@ static void save_build_count_file(
 
 
 static void update_build_counts(
-    VEC(build_count_t,gc) *counts,
-    const char            *base_fname)
+    VEC(build_count_t,gc) **counts,
+    const char             *base_fname)
 {
     unsigned i, updated;
     build_count_t *count;
 
     /* Update the data for this file, if it doesn't exist... add it! */
     updated = 0;
-    FOR_EACH_VEC_ELT(build_count_t, counts, i, count)
+    FOR_EACH_VEC_ELT(build_count_t, *counts, i, count)
     {
         if (strncmp(count->fname, base_fname, strlen(base_fname)) == 0)
         {
@@ -223,9 +227,14 @@ static void insert_build_string(
     char *str;
     tree decl, lit;
     count_t count;
-    
+   
+    /* <identisaurus>FileName:Build <count> at <timestamp></identisaurus>\n" 
+     * The \n is a convience and is just another byte making things easy to
+     * grep out from readelf or strings.
+     */
     count = get_build_number(counts, base_fname);
-    asprintf(&str, "<"TAG">Build %lu at %lu</"TAG">", count, time(NULL));
+    asprintf(&str, "<"TAG">%s:Build %lu at %lu</"TAG">\n",
+             main_input_basename, count, time(NULL));
     P("Inserting build string: '%s' into file '%s'", str, base_fname);
 
     /* Create a global string constant and have this baby plop into .ro */
@@ -251,7 +260,7 @@ static void insert_build_string(
  */
 static void identisaurus_exec(void *gcc_data, void *user_data)
 {
-    char *base_fname;
+    char *base_fname, *rawr_fname;
     VEC(build_count_t,gc) *counts;
 
     /* gcc does not provide us with access to the information defining the name
@@ -259,15 +268,26 @@ static void identisaurus_exec(void *gcc_data, void *user_data)
      * extensions and just do our build-count matching on the base of the
      * filename.
      */
-    base_fname = (char *)alloca(strlen(main_input_filename));
-    strcpy(base_fname, main_input_filename);
+    base_fname = (char *)alloca(main_input_baselength + 1);
+    strcpy(base_fname, main_input_basename);
     if (strrchr(base_fname, '.'))
       *strrchr(base_fname, '.') = '\0';
 
-    counts = load_build_count_file(DEFAULT_RAWR_FILE);
-    update_build_counts(counts, base_fname);
+    /* Path to the .rawr file (same dir as where main_input_flename exists) */
+    rawr_fname = (char *)alloca(
+        strlen(main_input_filename) + strlen(DEFAULT_RAWR_FILE) + 1);
+    strcpy(rawr_fname, main_input_filename);
+    if (strrchr(rawr_fname, '/'))
+      *(strrchr(rawr_fname, '/')+1) = '\0';
+    else
+      rawr_fname[0] = '\0';
+    strcat(rawr_fname, DEFAULT_RAWR_FILE);
+
+    /* Load the rawr file, update the counts, and insert the version string */
+    counts = load_build_count_file(rawr_fname);
+    update_build_counts(&counts, base_fname);
     insert_build_string(counts, base_fname);
-    save_build_count_file(DEFAULT_RAWR_FILE, counts);
+    save_build_count_file(rawr_fname, counts);
 }
 
 
