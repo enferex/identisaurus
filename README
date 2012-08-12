@@ -15,6 +15,12 @@ build count of the binary.  The user does not even need to be concerned about
 this file, but if you really really are, it is called '.identisaurus.rawr,'
 and lives in the directory where the source file resides.
 
+The data output in the object file is a string with the following format:
+    "<identisaurus><filename>:Build <count> at <timestamp></identisaurus>\n"
+
+If there are multiple files making-up the object file, then those strings are
+also included into the final object file.
+
 The identisaurus does not care what language the source file was written in.
 If gcc can handle it, identisaurus can too... rawr!
 
