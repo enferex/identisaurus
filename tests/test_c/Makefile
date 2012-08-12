@@ -9,7 +9,7 @@ $(APP): $(OBJS) main.c
 	$(CC) -o $@ $^ $(PLUGIN)
 
 %.o: %.c
-	$(CC) -c -o $@ $^
+	$(CC) -c -o $@ $^ $(PLUGIN)
 
 clean:
 	rm -rfv $(APP) $(OBJS)
