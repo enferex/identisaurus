@@ -1,3 +1,33 @@
+/******************************************************************************
+ * identisaurus.c 
+ *
+ * Identisaurus: A GCC plugin for automatic object file and binary versioning.
+ *
+ * Identisaurus is a plugin for the gcc compiler which automatically inserts a
+ * version string into the object files being compiled.  A POSIX timestamp and
+ * a monotonically increasing value (which is updated per build of the object
+ * file) is added to the resulting binary/object file.  The '.rodata' section
+ * of the binary contains this string and can be viewed by using `objdump' or
+ * `strings' or just looking for strings inside the binary with a text editor.
+ * Also, an accompanying script `check_version.sh' can be used to find the
+ * version of a specific object file that has been stamped by the identisaurus.
+ * 
+ * Copyright (C) 2012 Matt Davis (enferex)
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, see <http://www.gnu.org/licenses/gpl-2.0.html>
+ *****************************************************************************/
+
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <time.h>
